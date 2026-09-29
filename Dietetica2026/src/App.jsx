@@ -1,12 +1,19 @@
-import React from 'react'
+
 import './App.css'
 
-function App() {
+import ProductosDiet from './components/ProductosDiet'
 
+
+function App() {
+  
 
   return (
     <>
-     Proyecto Dietetica 2026 _
+      <h1>Carga tu changuito</h1>
+
+      <div className="card">
+        <ProductosDiet />
+      </div>
     </>
   )
 }
