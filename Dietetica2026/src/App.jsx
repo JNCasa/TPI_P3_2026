@@ -6,7 +6,7 @@ function App() {
 
   return (
     <>
-     Proyecto Dietetica 2026_
+     Proyecto Dietetica 2026 _
     </>
   )
 }
