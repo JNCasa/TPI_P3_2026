@@ -1,20 +1,30 @@
-
+import { BrowserRouter } from 'react-router-dom'
 import './App.css'
+import { ThemeProvider } from './context/ThemeContext.jsx'
+import { useTheme } from './context/useTheme.js'
+import Footer from './components/Footer/Footer.jsx'
+import Header from './components/Header/Header.jsx'
+import PagesRoutes from './PagesRoutes.jsx'
 
-import ProductosDiet from './components/ProductosDiet'
-
-
-function App() {
-  
+function AppLayout() {
+  const { mode } = useTheme()
 
   return (
-    <>
-      <h1>Carga tu changuito</h1>
+    <div className="app-shell" data-theme={mode}>
+      <Header />
+      <PagesRoutes />
+      <Footer />
+    </div>
+  )
+}
 
-      <div className="card">
-        <ProductosDiet />
-      </div>
-    </>
+function App() {
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

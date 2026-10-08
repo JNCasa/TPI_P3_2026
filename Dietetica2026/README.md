@@ -1,16 +1,23 @@
-# React + Vite
+# Dietetica 2026
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Base de la aplicación frontend con React, Vite y React Router. Las páginas y los componentes están creados como esqueletos vacíos para completar.
 
-Currently, two official plugins are available:
+## Navegación
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- `/` y `/Store`
+- `/AboutUs`
+- `/FrequentQuestions`
+- `/LogIn`
+- `/CreateAccount`
+- `/ListProducts`
+- `/ListUsers`
+- `/Cart`
 
-## React Compiler
+El encabezado ofrece enlaces a estas rutas, un espacio con el texto “Agregar logo”, un campo de búsqueda con lupa y un control para alternar entre los modos luminoso y oscuro.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desarrollo
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```sh
+npm install
+npm run dev
+```
