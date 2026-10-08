@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext.jsx'
 import { useTheme } from './context/useTheme.js'
 import Footer from './components/Footer/Footer.jsx'
 import Header from './components/Header/Header.jsx'
+import WhatsappComp from './components/WhatsappComp/WhatsappComp.jsx'
 import PagesRoutes from './PagesRoutes.jsx'
 
 function AppLayout() {
@@ -14,6 +15,7 @@ function AppLayout() {
       <Header />
       <PagesRoutes />
       <Footer />
+      <WhatsappComp />
     </div>
   )
 }
