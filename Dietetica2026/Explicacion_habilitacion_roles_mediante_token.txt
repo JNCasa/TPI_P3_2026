@@ -1,0 +1,30 @@
+HABILITACION DE ROLES MEDIANTE TOKEN
+
+Flujo hacia arriba: Detokenizador -> App
+
+Detokenizador.jsx
+    ↑ llama setVisible_del_padre(rol)
+LogIn.jsx
+    ↑
+PagesRoutes.jsx
+    ↑
+App.jsx actualiza el estado con el rol
+----------------------------------------------------------------------------
+Flujo hacia abajo: App -> componentes hijos
+
+App.jsx pasa el rol
+    ↓
+Header.jsx y PagesRoutes.jsx
+    ↓
+Paginas visibles segun el rol
+---------------------------------------------------------------------------------
+Permisos de interfaz:
+
+Rol             Tienda y compra    ABM productos    ABM usuarios
+Cliente         true               false            false
+Vendedor        false              true             false
+Administrador   false              false            true
+
+El rol se obtiene del payload del token y se comunica a App mediante
+setVisible_del_padre. App guarda el rol en su estado y lo pasa a sus hijos
+mediante props. Las paginas comparan el rol para decidir que contenido mostrar.

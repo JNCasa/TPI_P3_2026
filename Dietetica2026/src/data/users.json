@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Lucía Gómez",
+    "email": "lucia@example.com",
+    "password": "Demo1234!",
+    "role": "Administrador",
+    "status": "Activo"
+  },
+  {
+    "id": 2,
+    "name": "Martín Ruiz",
+    "email": "martin@example.com",
+    "password": "Demo1234!",
+    "role": "Vendedor",
+    "status": "Activo"
+  },
+  {
+    "id": 3,
+    "name": "Sofía López",
+    "email": "sofia@example.com",
+    "password": "Demo1234!",
+    "role": "Cliente",
+    "status": "Pendiente"
+  }
+]

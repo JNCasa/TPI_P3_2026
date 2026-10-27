@@ -4,7 +4,35 @@
   z-index: 10;
   width: 100%;
   border-bottom: 1px solid currentColor;
-  background: transparent;
+  background: var(--page-background, white);
+}
+
+.site-header--management {
+  position: relative;
+}
+
+.site-navbar--management {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.4rem 2rem;
+}
+
+.site-navbar--management .logo-placeholder {
+  min-height: 36px;
+}
+
+.management-back-link {
+  color: inherit;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.management-back-link:hover {
+  color: var(--products-accent, #347a4b);
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
 }
 
 .site-navbar {
@@ -118,6 +146,11 @@
 @media (max-width: 760px) {
   .site-navbar {
     padding: 1rem;
+  }
+
+  .site-navbar--management {
+    gap: 0.2rem;
+    padding: 0.4rem 1rem;
   }
 
   .navbar-main {

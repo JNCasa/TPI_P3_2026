@@ -1,23 +1,42 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useTheme } from '../../context/useTheme.js'
 import './Header.css'
 
 const navigationLinks = [
-  { label: 'Inicio', to: '/' },
+  { label: 'Tienda', to: '/Store' },
   { label: 'Productos', to: '/ListProducts' },
   { label: 'Usuarios', to: '/ListUsers' },
   { label: 'Nosotros', to: '/AboutUs' },
   { label: 'Preguntas frecuentes', to: '/FrequentQuestions' },
   { label: 'Iniciar sesión', to: '/LogIn' },
   { label: 'Crear cuenta', to: '/CreateAccount' },
-  { label: 'Carrito', to: '/Cart' },
 ]
 
-function Header() {
+function Header({ userRole }) {
   const { mode, toggleMode } = useTheme()
+  const { pathname } = useLocation()
+  const isManagementPage = ['/ListProducts', '/ListUsers'].includes(
+    pathname.replace(/\/$/, ''),
+  )
+  const visibleNavigationLinks = navigationLinks.filter(({ to }) => {
+    if (to === '/Store') return userRole === 'Cliente'
+    if (to === '/ListProducts') return userRole === 'Vendedor'
+    if (to === '/ListUsers') return userRole === 'Administrador'
+    return true
+  })
 
   return (
-    <header className="site-header">
+    <header className={`site-header${isManagementPage ? ' site-header--management' : ''}`}>
+      {isManagementPage ? (
+        <nav className="site-navbar site-navbar--management" aria-label="Navegación de administración">
+          <NavLink className="logo-placeholder" to="/" aria-label="Volver al inicio">
+            Agregar logo
+          </NavLink>
+          <NavLink className="management-back-link" to="/">
+            Volver al inicio
+          </NavLink>
+        </nav>
+      ) : (
       <nav className="site-navbar" aria-label="Navegación principal">
         <div className="navbar-main">
           <NavLink className="logo-placeholder" to="/" aria-label="Inicio">
@@ -57,13 +76,14 @@ function Header() {
           </button>
         </div>
         <div className="site-navigation">
-          {navigationLinks.map(({ label, to }) => (
+          {visibleNavigationLinks.map(({ label, to }) => (
             <NavLink key={to} to={to} end={to === '/'}>
               {label}
             </NavLink>
           ))}
         </div>
       </nav>
+      )}
     </header>
   )
 }
