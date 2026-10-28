@@ -39,16 +39,7 @@ function PagesRoutes({
   return (
     <main className="pages-section">
       <Routes>
-        <Route
-          path="/"
-          element={
-            visible_del_padre === 'Vendedor' ? (
-              <Home userRole={visible_del_padre} />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
-          }
-        />
+        <Route path="/" element={<Home userRole={visible_del_padre} />} />
         <Route
           path="/Store"
           element={

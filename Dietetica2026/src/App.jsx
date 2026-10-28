@@ -8,6 +8,7 @@ import WhatsappComp from './components/WhatsappComp/WhatsappComp.jsx'
 import PagesRoutes from './PagesRoutes.jsx'
 import { useEffect, useState } from 'react'
 import initialProducts from './data/products.js'
+import { obtenerUsuarioActual, obtenerRol } from './services/auth.js'
 
 function AppLayout({
   catalogProducts,
@@ -20,7 +21,10 @@ function AppLayout({
 
   return (
     <div className="app-shell" data-theme={mode}>
-      <Header userRole={visible_del_padre} />
+      <Header
+        userRole={visible_del_padre}
+        setVisible_del_padre={setVisible_del_padre}
+      />
       <PagesRoutes
         catalogProducts={catalogProducts}
         products={products}
@@ -38,6 +42,15 @@ function App() {
   const [catalogProducts, setCatalogProducts] = useState(initialProducts)
   const [products, setProducts] = useState([])
   const [visible_del_padre, setVisible_del_padre] = useState('')
+
+  // Al recargar, valida la sesión guardada consultando el backend protegido /me.
+  useEffect(() => {
+    if (!localStorage.getItem('token')) return
+
+    obtenerUsuarioActual()
+      .then((usuario) => setVisible_del_padre(obtenerRol(usuario)))
+      .catch(() => setVisible_del_padre(''))
+  }, [])
 
   useEffect(() => {
     fetch('/api/Productos')

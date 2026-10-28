@@ -1,5 +1,6 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useTheme } from '../../context/useTheme.js'
+import { cerrarSesion as eliminarSesion } from '../../services/auth.js'
 import './Header.css'
 
 const navigationLinks = [
@@ -9,12 +10,12 @@ const navigationLinks = [
   { label: 'Nosotros', to: '/AboutUs' },
   { label: 'Preguntas frecuentes', to: '/FrequentQuestions' },
   { label: 'Iniciar sesión', to: '/LogIn' },
-  { label: 'Crear cuenta', to: '/CreateAccount' },
 ]
 
-function Header({ userRole }) {
+function Header({ userRole, setVisible_del_padre }) {
   const { mode, toggleMode } = useTheme()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const isManagementPage = ['/ListProducts', '/ListUsers'].includes(
     pathname.replace(/\/$/, ''),
   )
@@ -22,8 +23,15 @@ function Header({ userRole }) {
     if (to === '/Store') return userRole === 'Cliente'
     if (to === '/ListProducts') return userRole === 'Vendedor'
     if (to === '/ListUsers') return userRole === 'Administrador'
+    if (to === '/LogIn') return !userRole
     return true
   })
+
+  function cerrarSesion() {
+    eliminarSesion()
+    setVisible_del_padre('')
+    navigate('/LogIn')
+  }
 
   return (
     <header className={`site-header${isManagementPage ? ' site-header--management' : ''}`}>
@@ -81,6 +89,11 @@ function Header({ userRole }) {
               {label}
             </NavLink>
           ))}
+          {userRole && (
+            <button type="button" onClick={cerrarSesion}>
+              Cerrar sesión
+            </button>
+          )}
         </div>
       </nav>
       )}

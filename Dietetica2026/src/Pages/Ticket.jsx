@@ -21,13 +21,11 @@ function Ticket({ products, setProducts }) {
   async function confirmarCompra() {
     setError('')
 
-    const token = (
-      localStorage.getItem('token') || sessionStorage.getItem('token')
-    )?.trim()
+    const token = localStorage.getItem('token')?.trim()
 
     if (!token) {
       setError(
-        'Pegá el token de Postman en DevTools → Application → Local Storage con Key "token" antes de comprar.',
+        'Iniciá sesión antes de confirmar la compra.',
       )
       return
     }
@@ -47,7 +45,7 @@ function Ticket({ products, setProducts }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token.replace(/^Bearer\s+/i, '')}`,
+          Authorization: 'Bearer ' + token,
         },
         body: JSON.stringify(ticket),
       })
