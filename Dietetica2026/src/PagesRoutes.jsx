@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import AboutUs from './Pages/AboutUs.jsx'
 import Cart from './Pages/Cart.jsx'
 import CreateAccount from './Pages/CreateAccount.jsx'
@@ -9,6 +10,7 @@ import ListUsers from './Pages/ListUsers.jsx'
 import LogIn from './Pages/LogIn.jsx'
 import Store from './Pages/Store.jsx'
 import Ticket from './Pages/Ticket.jsx'
+import Protected from './components/Protected.jsx'
 // Entrás a / o /Store → ves la tienda.
 // Desde /Store, "Ver compra" abre /Cart; desde ahí se continúa a /Ticket.
 
@@ -26,81 +28,80 @@ function PagesRoutes({
   setProducts,
   visible_del_padre,
   setVisible_del_padre,
+  isSessionLoading,
 }) {
-  const roleHome =
-    visible_del_padre === 'Cliente'
-      ? '/Store'
-      : visible_del_padre === 'Administrador'
-        ? '/ListUsers'
-        : visible_del_padre === 'Vendedor'
-          ? '/ListProducts'
-          : '/LogIn'
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <main className="pages-section">
       <Routes>
         <Route path="/" element={<Home userRole={visible_del_padre} />} />
+        <Route path="/LogIn" element={<LogIn setVisible_del_padre={setVisible_del_padre} />} />
+        <Route path="/CreateAccount" element={<CreateAccount />} />
+        <Route path="/AboutUs" element={<AboutUs />} />
+        <Route path="/FrequentQuestions" element={<FrequentQuestions />} />
+
         <Route
-          path="/Store"
           element={
-            visible_del_padre === 'Cliente' ? (
+            <Protected
+              userRole={visible_del_padre}
+              allowedRole="Cliente"
+              isLoading={isSessionLoading}
+            />
+          }
+        >
+          <Route
+            path="/Store"
+            element={
               <Store
                 visible_del_padre={visible_del_padre}
                 catalogProducts={catalogProducts}
                 setProducts={setProducts}
               />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
-          }
-        />
-        <Route
-          path="/Cart"
-          element={
-            visible_del_padre === 'Cliente' ? (
-              <Cart products={products} />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
-          }
-        />
-        <Route
-          path="/Ticket"
-          element={
-            visible_del_padre === 'Cliente' ? (
+            }
+          />
+          <Route
+            path="/Cart"
+            element={
+              <Cart products={products} setProducts={setProducts} />
+            }
+          />
+          <Route
+            path="/Ticket"
+            element={
               <Ticket products={products} setProducts={setProducts} />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
-          }
-        />
+            }
+          />
+        </Route>
+
         <Route
-          path="/LogIn"
-          element={<LogIn setVisible_del_padre={setVisible_del_padre} />}
-        />
-        <Route path="/CreateAccount" element={<CreateAccount />} />
-        <Route path="/AboutUs" element={<AboutUs />} />
-        <Route path="/FrequentQuestions" element={<FrequentQuestions />} />
-        <Route
-          path="/ListProducts"
           element={
-            visible_del_padre === 'Vendedor' ? (
-              <ListProducts />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
+            <Protected
+              userRole={visible_del_padre}
+              allowedRole="Vendedor"
+              isLoading={isSessionLoading}
+            />
           }
-        />
+        >
+          <Route path="/ListProducts" element={<ListProducts />} />
+        </Route>
+
         <Route
-          path="/ListUsers"
           element={
-            visible_del_padre === 'Administrador' ? (
-              <ListUsers />
-            ) : (
-              <Navigate to={roleHome} replace />
-            )
+            <Protected
+              userRole={visible_del_padre}
+              allowedRole="Administrador"
+              isLoading={isSessionLoading}
+            />
           }
-        />
+        >
+          <Route path="/ListUsers" element={<ListUsers />} />
+        </Route>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </main>

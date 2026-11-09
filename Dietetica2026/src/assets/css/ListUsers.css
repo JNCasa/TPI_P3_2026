@@ -4,6 +4,28 @@
   padding: 1rem;
 }
 
+.users-title-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.35em;
+  object-fit: contain;
+  vertical-align: -0.12em;
+}
+
+.users-back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #347a4b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.users-back-link:hover {
+  color: #28633c;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
 .users-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -37,6 +59,18 @@
 .users-form button,
 .users-table button {
   cursor: pointer;
+}
+
+.users-table button.btn-primary {
+  border-color: #0d6efd;
+  background-color: #0d6efd;
+  color: #ffffff;
+}
+
+.users-table button.btn-danger {
+  border-color: #dc3545;
+  background-color: #dc3545;
+  color: #ffffff;
 }
 
 .users-form button[type='submit'] {

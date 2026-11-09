@@ -1,0 +1,33 @@
+.site-footer {
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #244821;
+  background: #d9efcf;
+  color: #263b25;
+  text-align: center;
+}
+
+.site-footer__contact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 2rem;
+  color: #fff;
+  font-weight: 700;
+  -webkit-text-stroke: 0.5px #183b16;
+  text-shadow: 0 2px 2px rgb(16 42 17 / 75%);
+}
+
+.site-footer p {
+  margin: 0.25rem 0;
+}
+
+.site-footer a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.site-footer__copyright {
+  margin-top: 0.65rem !important;
+  font-size: 0.9rem;
+}

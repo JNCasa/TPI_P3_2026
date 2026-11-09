@@ -1,8 +1,12 @@
 import { useState } from 'react'
 
-function Card({ id, title, description, weight, price, image, setProducts }) {
+function Card({ id, title, description, weight, price, image, stock, setProducts }) {
   const [cantidad, setCantidad] = useState(0)
-
+  const stockDisponible = Number.isFinite(Number(stock)) ? Math.max(0, Number(stock)) : 0
+// Number(stock): convierte el stock a número.
+// Number.isFinite(...): verifica que sea un número válido, no NaN ni infinito.
+// Math.max(0, ...): evita que el stock quede por debajo de cero.
+// Si no es un número válido, usa 0.
   const updateSelectedProduct = (nuevaCantidad) => {
     const precio = Number(String(price).replace(/[^0-9,.-]/g, '').replace(',', '.'))
     const productoSeleccionado = {
@@ -16,24 +20,26 @@ function Card({ id, title, description, weight, price, image, setProducts }) {
       monto: nuevaCantidad * precio,
     }
 
-    setProducts((b) => {
-      const indice = b.findIndex((product) => product.id === id)
+    setProducts((productos) => {
+      const indice = productos.findIndex((product) => product.id === id)
 
       if (nuevaCantidad === 0) {
-        return b.filter((product) => product.id !== id)
+        return productos.filter((product) => product.id !== id)
       }
 
       if (indice === -1) {
-        return [...b, productoSeleccionado]
+        return [...productos, productoSeleccionado]
       }
 
-      return b.map((product, i) => (
+      return productos.map((product, i) => (
         i === indice ? productoSeleccionado : product
       ))
     })
   }
 
   const sumar = () => {
+    if (cantidad >= stockDisponible) return
+
     const nuevaCantidad = cantidad + 1
     setCantidad(nuevaCantidad)
     updateSelectedProduct(nuevaCantidad)
@@ -46,36 +52,42 @@ function Card({ id, title, description, weight, price, image, setProducts }) {
   }
 
   return (
-    <div className="card" style={{ width: '18rem' }}>
+    <div className="card" style={{ width: '18rem', zoom: 0.6 }}>
       <div style={{ overflow: 'hidden' }}>
         <img className="card-img-top" src={image} alt={title} />
       </div>
       <div className="card-body">
         <h5 className="card-title">{title}</h5>
-        <p className="card-text">{weight}</p>
-        <p className="card-text">{price}</p>
-        <p className="card-text">{description}</p>
+        <p className="card-text">{"Peso neto: "+weight}</p>
+        <p className="card-text">{"Precio $"+price}</p>
+        <p className="card-text">{"Stock disponible : "+stock}</p>
+    
 
-        <div className="d-flex align-items-center gap-2">
-          <button
-            type="button"
-            className="btn btn-success btn-lg shadow-sm"
-            onClick={sumar}
-            aria-label={`Aumentar cantidad de ${title}`}
-          >
-            +
-          </button>
-
-          <span aria-live="polite">Cantidad: {cantidad}</span>
-          <button
-            type="button"
-            className="btn btn-success btn-lg shadow-sm"
-            onClick={restar}
-            aria-label={`Disminuir cantidad de ${title}`}
-          >
-            -
-          </button>
-        </div>
+        {stockDisponible > 0 ? (
+          <div className="d-flex align-items-center gap-2">
+            <span aria-live="polite">Cantidad: {cantidad}</span>
+            <button
+              type="button"
+              className="btn btn-success btn-lg shadow-sm"
+              onClick={restar}
+              disabled={cantidad === 0}
+              aria-label={`Disminuir cantidad de ${title}`}
+            >
+              -
+            </button>
+            <button
+              type="button"
+              className="btn btn-success btn-lg shadow-sm"
+              onClick={sumar}
+              disabled={cantidad >= stockDisponible}
+              aria-label={`Aumentar cantidad de ${title}`}
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <p>🛒❌ Agotado </p>
+        )}
       </div>
     </div>
   )

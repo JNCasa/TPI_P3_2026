@@ -1,0 +1,20 @@
+.store-page {
+  padding-bottom: 5rem;
+}
+
+.store-cart-button {
+  position: fixed;
+  left: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 20;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 22%);
+}
+
+@media (max-width: 520px) {
+  .store-cart-button {
+    left: 1rem;
+    bottom: 1rem;
+  }
+}

@@ -1,0 +1,108 @@
+.about-page__hero {
+  position: relative;
+  display: inline-block;
+}
+
+.about-page__hero > img {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: auto;
+}
+
+.about-page__hero-title {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 800;
+  text-align: left;
+  -webkit-text-stroke: 1px #183b16;
+  text-shadow: 0 3px 4px rgb(16 42 17 / 80%);
+}
+
+.about-page__who-link {
+  position: absolute;
+  top: calc(0.5rem + clamp(1.5rem, 4vw, 3rem) * 1.2);
+  left: 0.75rem;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  -webkit-text-stroke: 0.35px #183b16;
+  text-shadow: 0 2px 3px rgb(16 42 17 / 85%);
+}
+
+.about-page__title {
+  width: 84%;
+  margin-top: 5vh;
+  margin-right: auto;
+  margin-left: auto;
+  scroll-margin-top: 110px;
+}
+
+.about-carousel {
+  position: relative;
+  width: 84%;
+  height: clamp(240px, 58.8vh, 620px);
+  margin: 0 auto 5vh;
+  scroll-margin-top: 1rem;
+  overflow: hidden;
+  border-radius: 2%;
+}
+
+.about-carousel .carousel-inner,
+.about-carousel .carousel-item {
+  height: 100%;
+}
+
+.about-carousel .carousel-item {
+  transition: transform 1.1s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.about-carousel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(1px);
+}
+
+.about-carousel__caption {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(80%, 850px);
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  -webkit-text-stroke: 0.5px #183b16;
+  text-shadow: 0 2px 2px rgb(16 42 17 / 75%);
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-carousel .carousel-item {
+    transition-duration: 0.01ms;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-carousel {
+    height: clamp(220px, 55vh, 450px);
+  }
+
+  .about-carousel__caption {
+    width: 82%;
+    padding: 0.65rem;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+}

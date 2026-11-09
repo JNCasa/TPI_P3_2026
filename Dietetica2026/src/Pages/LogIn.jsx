@@ -34,7 +34,13 @@ function LogIn({ setVisible_del_padre }) {
 
   return (
     <section className="login-page">
-      <h1>Iniciar sesión</h1>
+      <h1> <img
+    src="/images/logosolo.png"
+    alt="Logo"
+    width="40"
+    height="40"
+    className="me-2"
+  />Iniciar sesión</h1>
       <form className="login-form" onSubmit={iniciarSesion}>
         <label htmlFor="login-email">Email</label>
         <input
@@ -64,7 +70,7 @@ function LogIn({ setVisible_del_padre }) {
             {mostrarPassword ? '🙈' : '👁'}
           </button>
         </div>
-        <button type="submit">Ingresar</button>
+        <button type="submit" class="btn btn-success">Iniciar</button>
         {error && <p role="alert">{error}</p>}
       </form>
       <p>¿No tenés usuario? <Link to="/CreateAccount">Crear cuenta</Link></p>

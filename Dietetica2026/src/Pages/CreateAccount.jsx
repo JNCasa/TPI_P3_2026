@@ -91,7 +91,7 @@ const CreateAccount = () => {
           required
         />
 
-        <button type="submit">Crear cuenta</button>
+        <button type="submit"class="btn btn-success">Crear cuenta</button>
         {error && <p role="alert">{error}</p>}
         {success && <p role="status">{success}</p>}
       </form>

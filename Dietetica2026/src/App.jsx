@@ -7,8 +7,8 @@ import Header from './components/Header/Header.jsx'
 import WhatsappComp from './components/WhatsappComp/WhatsappComp.jsx'
 import PagesRoutes from './PagesRoutes.jsx'
 import { useEffect, useState } from 'react'
-import initialProducts from './data/products.js'
 import { obtenerUsuarioActual, obtenerRol } from './services/auth.js'
+import { resolveProductImage } from './utils/productImage.js'
 
 function AppLayout({
   catalogProducts,
@@ -16,6 +16,7 @@ function AppLayout({
   setProducts,
   visible_del_padre,
   setVisible_del_padre,
+  isSessionLoading,
 }) {
   const { mode } = useTheme()
 
@@ -31,17 +32,22 @@ function AppLayout({
         setProducts={setProducts}
         visible_del_padre={visible_del_padre}
         setVisible_del_padre={setVisible_del_padre}
+        isSessionLoading={isSessionLoading}
       />
       <Footer />
-      <WhatsappComp />
+      {!isSessionLoading &&
+        (!visible_del_padre || visible_del_padre === 'Cliente') && <WhatsappComp />}
     </div>
   )
 }
 
 function App() {
-  const [catalogProducts, setCatalogProducts] = useState(initialProducts)
+  const [catalogProducts, setCatalogProducts] = useState([])
   const [products, setProducts] = useState([])
   const [visible_del_padre, setVisible_del_padre] = useState('')
+  const [isSessionLoading, setIsSessionLoading] = useState(
+    () => Boolean(localStorage.getItem('token')),
+  )
 
   // Al recargar, valida la sesión guardada consultando el backend protegido /me.
   useEffect(() => {
@@ -50,10 +56,21 @@ function App() {
     obtenerUsuarioActual()
       .then((usuario) => setVisible_del_padre(obtenerRol(usuario)))
       .catch(() => setVisible_del_padre(''))
+      .finally(() => setIsSessionLoading(false))
   }, [])
 
   useEffect(() => {
-    fetch('/api/Productos')
+    if (isSessionLoading || !visible_del_padre) return undefined
+
+    const token = localStorage.getItem('token')?.trim()
+    if (!token) return undefined
+
+    const controller = new AbortController()
+
+    fetch('/api/Productos', {
+      signal: controller.signal,
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((response) => {
         if (!response.ok) throw new Error('Error al cargar productos')
         return response.json()
@@ -66,13 +83,16 @@ function App() {
           description: product.descripcion ?? '',
           weight: product.peso,
           price: product.precio,
-          image: product.imagen.startsWith('/')
-            ? product.imagen
-            : `/images/${product.imagen}`,
+          stock: Number(product.stock) || 0,
+          image: resolveProductImage(product.imagen),
         })))
       })
-      .catch((error) => console.error(error))
-  }, [])
+      .catch((error) => {
+        if (error.name !== 'AbortError') console.error(error)
+      })
+
+    return () => controller.abort()
+  }, [isSessionLoading, visible_del_padre])
 
   return (
     <ThemeProvider>
@@ -83,6 +103,7 @@ function App() {
           setProducts={setProducts}
           visible_del_padre={visible_del_padre}
           setVisible_del_padre={setVisible_del_padre}
+          isSessionLoading={isSessionLoading}
         />
       </BrowserRouter>
     </ThemeProvider>

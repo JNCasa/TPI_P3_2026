@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import seedUsers from '../data/users.json'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import '../assets/css/ListUsers.css'
 
-const STORAGE_KEY = 'dietetica-users'
+const USERS_ENDPOINT = '/api/Usuarios'
 
 const emptyUser = {
   name: '',
@@ -12,44 +12,79 @@ const emptyUser = {
   status: 'Activo',
 }
 
-function readUsers() {
-  const savedUsers = localStorage.getItem(STORAGE_KEY)
-  if (savedUsers === null) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seedUsers))
-    return seedUsers
+function mapUser(user) {
+  return {
+    id: user.id_usuario,
+    name: user.nombre ?? '',
+    email: user.email ?? '',
+    role: user.rol ?? '',
+    status: user.estado ?? '',
+  }
+}
+
+async function readResponse(response) {
+  const responseText = await response.text()
+  if (!responseText) return null
+
+  try {
+    return JSON.parse(responseText)
+  } catch {
+    return responseText
+  }
+}
+
+function getErrorMessage(data, fallback) {
+  if (typeof data === 'string') return data
+  if (Array.isArray(data?.message)) return data.message.join(' ')
+  return data?.message ?? data?.error ?? fallback
+}
+
+async function fetchUsers(token, signal) {
+  const response = await fetch(USERS_ENDPOINT, {
+    signal,
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await readResponse(response)
+
+  if (!response.ok) {
+    throw new Error(getErrorMessage(data, 'No se pudieron cargar los usuarios'))
+  }
+  if (!Array.isArray(data)) {
+    throw new Error('La respuesta del backend no contiene una lista de usuarios válida')
   }
 
-  const users = JSON.parse(savedUsers)
-  if (!Array.isArray(users)) {
-    throw new Error('Los datos guardados de usuarios no tienen un formato válido.')
-  }
-
-  return users
+  return data.map(mapUser)
 }
 
 function ListUsers() {
-  const [initialState] = useState(() => {
-    try {
-      return { users: readUsers(), error: '' }
-    } catch (error) {
-      return { users: [], error: `No se pudieron cargar los usuarios: ${error.message}` }
-    }
-  })
-  const [users, setUsers] = useState(initialState.users)
+  const [users, setUsers] = useState([])
   const [form, setForm] = useState({ ...emptyUser })
   const [editingId, setEditingId] = useState(null)
-  const [message, setMessage] = useState(initialState.error)
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('token')?.trim()))
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState(() => (
+    localStorage.getItem('token')?.trim() ? '' : 'Iniciá sesión para administrar usuarios.'
+  ))
 
-  function persistUsers(nextUsers) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextUsers))
-      setUsers(nextUsers)
-      return true
-    } catch (error) {
-      setMessage(`No se pudieron guardar los usuarios: ${error.message}`)
-      return false
+  useEffect(() => {
+    const controller = new AbortController()
+    const token = localStorage.getItem('token')?.trim()
+
+    if (!token) {
+      return () => controller.abort()
     }
-  }
+
+    fetchUsers(token, controller.signal)
+      .then(setUsers)
+      .catch((error) => {
+        if (error.name !== 'AbortError') setMessage(error.message)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [])
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -61,35 +96,56 @@ function ListUsers() {
     setForm({ ...emptyUser })
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
+    setMessage('')
 
-    const email = form.email.trim().toLowerCase()
-    const duplicateEmail = users.some(
-      (user) => user.email?.toLowerCase() === email && user.id !== editingId,
-    )
-
-    if (duplicateEmail) {
-      setMessage('Ya existe un usuario con ese correo.')
+    const token = localStorage.getItem('token')?.trim()
+    if (!token) {
+      setMessage('Iniciá sesión para administrar usuarios.')
       return
     }
 
-    if (editingId === null && !form.password.trim()) {
-      setMessage('La contraseña es obligatoria para crear un usuario.')
-      return
-    }
+    setSaving(true)
+    const isEditing = editingId !== null
+    const request = isEditing
+      ? {
+        url: `${USERS_ENDPOINT}/${editingId}`,
+        method: 'PATCH',
+        body: { rol: form.role, estado: form.status },
+      }
+      : {
+        url: USERS_ENDPOINT,
+        method: 'POST',
+        body: {
+          nombre: form.name.trim(),
+          email: form.email.trim(),
+          password: form.password,
+          rol: form.role,
+        },
+      }
 
-    const nextUsers = editingId === null
-      ? [...users, { ...form, id: crypto.randomUUID(), email }]
-      : users.map((user) => (
-        user.id === editingId
-          ? { ...user, ...form, email, password: form.password || user.password }
-          : user
-      ))
+    try {
+      const response = await fetch(request.url, {
+        method: request.method,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(request.body),
+      })
+      const data = await readResponse(response)
+      if (!response.ok) {
+        throw new Error(getErrorMessage(data, 'No se pudo guardar el usuario'))
+      }
 
-    if (persistUsers(nextUsers)) {
-      setMessage(editingId === null ? 'Usuario agregado.' : 'Usuario actualizado.')
+      setUsers(await fetchUsers(token))
       resetForm()
+      setMessage(isEditing ? 'Usuario actualizado.' : 'Usuario agregado.')
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -105,18 +161,50 @@ function ListUsers() {
     setMessage('')
   }
 
-  function deleteUser(userId) {
+  async function deleteUser(userId) {
     if (!window.confirm('¿Querés eliminar este usuario?')) return
 
-    if (persistUsers(users.filter((user) => user.id !== userId))) {
+    setMessage('')
+    const token = localStorage.getItem('token')?.trim()
+    if (!token) {
+      setMessage('Iniciá sesión para administrar usuarios.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const response = await fetch(`${USERS_ENDPOINT}/${userId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await readResponse(response)
+      if (!response.ok) {
+        throw new Error(getErrorMessage(data, 'No se pudo eliminar el usuario'))
+      }
+
+      setUsers(await fetchUsers(token))
       if (editingId === userId) resetForm()
       setMessage('Usuario eliminado.')
+    } catch (error) {
+      setMessage(error.message)
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
     <section className="users-page" aria-labelledby="users-title">
-      <h1 id="users-title">Control de usuarios</h1>
+      <Link className="users-back-link" to="/">
+        ← Volver al inicio
+      </Link>
+      <h1 id="users-title">
+        <img
+          src="/images/logosolo.png"
+          alt=""
+          className="users-title-icon"
+        />
+        Control de usuarios
+      </h1>
       <p>Creá cuentas y administrá sus roles y estados.</p>
 
       <form className="users-form" onSubmit={handleSubmit}>
@@ -128,6 +216,7 @@ function ListUsers() {
             onChange={handleChange}
             autoComplete="name"
             required
+            readOnly={editingId !== null}
           />
         </label>
 
@@ -140,12 +229,15 @@ function ListUsers() {
             onChange={handleChange}
             autoComplete="email"
             required
+            readOnly={editingId !== null}
           />
         </label>
 
         <label>
           Contraseña
-          {editingId !== null && <small>Dejala vacía para mantener la actual.</small>}
+          {editingId !== null
+            ? <small>El backend no permite modificar la contraseña desde esta pantalla.</small>
+            : <small>Usá al menos 8 caracteres, una mayúscula, una minúscula y un número.</small>}
           <input
             name="password"
             type="password"
@@ -153,6 +245,8 @@ function ListUsers() {
             onChange={handleChange}
             autoComplete="new-password"
             required={editingId === null}
+            minLength="8"
+            disabled={editingId !== null}
           />
         </label>
 
@@ -167,7 +261,13 @@ function ListUsers() {
 
         <label>
           Estado
-          <select name="status" value={form.status} onChange={handleChange}>
+          {editingId === null && <small>Las cuentas nuevas se crean activas.</small>}
+          <select
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+            disabled={editingId === null}
+          >
             <option value="Activo">Activo</option>
             <option value="Pendiente">Pendiente</option>
             <option value="Inactivo">Inactivo</option>
@@ -175,11 +275,11 @@ function ListUsers() {
         </label>
 
         <div className="users-form-actions">
-          <button type="submit">
-            {editingId === null ? 'Agregar usuario' : 'Guardar cambios'}
+          <button type="submit" disabled={saving}>
+            {saving ? 'Guardando...' : editingId === null ? 'Agregar usuario' : 'Guardar cambios'}
           </button>
           {editingId !== null && (
-            <button type="button" onClick={resetForm}>Cancelar</button>
+            <button type="button" onClick={resetForm} disabled={saving}>Cancelar</button>
           )}
         </div>
       </form>
@@ -198,26 +298,44 @@ function ListUsers() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
-                <td>{user.status}</td>
-                <td>
-                  <button type="button" onClick={() => startEditing(user)}>
-                    Editar
-                  </button>
-                  <button type="button" onClick={() => deleteUser(user.id)}>
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
+            {loading ? (
               <tr>
-                <td colSpan="5">Todavía no hay usuarios guardados.</td>
+                <td colSpan="5">Cargando usuarios...</td>
               </tr>
+            ) : (
+              <>
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.role}</td>
+                    <td>{user.status}</td>
+                    <td>
+                      <button
+                        className="btn btn-primary"
+                        type="button"
+                        onClick={() => startEditing(user)}
+                        disabled={saving}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        type="button"
+                        onClick={() => deleteUser(user.id)}
+                        disabled={saving}
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {users.length === 0 && (
+                  <tr>
+                    <td colSpan="5">Todavía no hay usuarios guardados.</td>
+                  </tr>
+                )}
+              </>
             )}
           </tbody>
         </table>

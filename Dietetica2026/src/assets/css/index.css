@@ -10,10 +10,31 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 * {
